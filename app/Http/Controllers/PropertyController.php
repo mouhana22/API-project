@@ -9,11 +9,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Property;
+use App\Http\Resources\PropertyResource;
+
 
 //Implement controller methods for each route (in routes/api.php) to handle the operations.
 class PropertyController extends Controller
 {
-    
+
     //index function: return all properties.
     public function index()
     {
@@ -23,7 +25,7 @@ class PropertyController extends Controller
             return response()->json(['message' => 'No properties found.'], 200);
         }
 
-        return response()->json($properties, 200);
+        return PropertyResource::collection($properties);
     }
 
     //store function: Store a newly created Property.
@@ -31,10 +33,8 @@ class PropertyController extends Controller
     {
 
         $validatedData = $this->validatePropertyData($request);
-
         $property = Property::create($validatedData);
-
-        return response()->json($property, 201);
+        return new PropertyResource($property);
     }
 
 
@@ -42,10 +42,12 @@ class PropertyController extends Controller
     public function show($id)
     {
         $property = Property::find($id);
+
         if (!$property) {
             return response()->json(['error' => 'Property not found'], 404);
         }
-        return response()->json($property);
+
+        return new PropertyResource($property);
     }
 
     
@@ -62,7 +64,7 @@ class PropertyController extends Controller
         $validatedData = $this->validatePropertyData($request);
         $property->update($validatedData);
 
-        return response()->json($property, 200);
+        return new PropertyResource($property);
     }
 
     
@@ -77,7 +79,7 @@ class PropertyController extends Controller
 
         $property->delete();
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Property deleted successfully'], 204);
     }
 
     //Validation function, to be used in store and update, to ensure data integrity
